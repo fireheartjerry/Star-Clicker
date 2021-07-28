@@ -162,7 +162,7 @@ while True:
             screen.blit(purchase_success, (970, 90*i+5))
             stars -= round(cost_list[i])
             stars_per_second += stars_made_per_unit[i]
-            cost_list[i] *= 1.25
+            cost_list[i] *= 1.15
             amount_list[i] += 1
         if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars < cost_list[i]:
             bad_font = pygame.font.SysFont("Impact", 35)
