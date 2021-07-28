@@ -3,19 +3,19 @@ import pygame
 from pygame.locals import *
 from pygame import mixer
 
-# Inputs and Beginning
+# Inputs and Beginning of Game
 input("\033[1;32mSet Sound Volume to 10 for best sound effects. ")
 input("\033[1;32mWelcome to \033[1;33mStar Clicker\033[1;32m\nIn this game, your goal is to make as many stars as possible. Pres\nYou can make endless stars! Hover over a unit for info.\nClick the giant sun to make 1 star.\nas you click more, your levels will incrase, with each one doubling the amount of stars you make per click.\nYou also will have units, but them at the right side of th screen. \nUnits make a certain amount of stars each second.\nThe cost of buying more star units will go up every time you buy one. \nHave fun! ")
 music_type = eval(input("Music type (1), (2), or (3): "))
 
-# Key Variables and Initialization
+# Initialization
 pygame.init()
+
+# Program Variables
 title = "Star Clicker"
 FPS_clock = pygame.time.Clock()
-red = (255, 0, 0),
 green = (0, 255, 0)
 yellow = (255, 255, 0)
-black = (0, 0, 0)
 white = (255, 255, 255)
 width = 1150
 height = 810
@@ -48,10 +48,10 @@ nebula = pygame.transform.scale(nebula1, (200, 90))
 foam = pygame.transform.scale(foam1, (200, 90))
 bang = pygame.transform.scale(bang1, (200, 90))
 
-# If_clicked Images
+# If_clicked Image
 sun_if_clicked = pygame.transform.scale(sun, (325, 325))
 
-# Tech Variables
+# Game Variables
 stars = 0
 star_level = 1
 star_barrier = 50
@@ -64,65 +64,90 @@ display_font = pygame.font.SysFont("Impact", 40)
 info_font = pygame.font.SysFont("Calibri", 24, bold=True)
 amount_list = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 star_producers = [brown, red, neutron, regular, giant, supergiant, nebula, foam, bang]
-stars_made_per_unit = [0.25, 1, 8, 47, 260, 1400, 7800, 44000, 260000]
+stars_made_per_unit = [0.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000]
 cost_list = [15, 100, 1500, 8000, 20000, 150000, 1000000, 2500000, 10000000]
 
+# Initiates the music mixer
+mixer.init()
 
 
 # Background Music Function
 def music():
-    mixer.init()
+
+    # Music Select 1
     if music_type == 1:
         pygame.mixer.music.load('Battle Cats BGM - Main Theme.mp3')
         pygame.mixer.music.play(-1)
+
+    # Music Select 2
     elif music_type == 2:
         pygame.mixer.music.load('Battle Cats BGM - Uphill Battle.mp3')
         pygame.mixer.music.play(-1)
+
+    # Music Select 3
     elif music_type == 3:
         pygame.mixer.music.load('Battle Cats BGM - Boss Battle Theme.mp3')
         pygame.mixer.music.play(-1)
 
 
-# Background Music
+def click():
+    effect = pygame.mixer.Sound('Click.wav')  # Click effect variable
+    effect.play()  # Plays the click sound
+
+
+# Calls the music function
 music()
 
 # Screen part
 while True:
-    FPS_clock.tick(30)
+    # 30 frames per second
+    FPS_clock.tick(60)
     for event in pygame.event.get():
+
+        # If exit pygame, end program.
         if event.type == QUIT:
+            print()
+            print("Game has ended")
             exit()
+
+        # Defining Star Fonts
         producing = star_count_font.render(str(stars_per_second) + " stars per second", False, white)
         level = star_count_font.render("STAR LEVEL = " + str(star_level), False, white)
+
+        # Displays background image
         screen.blit(star_background, (0, 0))
 
-    # Click mechanics
+        # Click mechanics of Sun
         if event.type == MOUSEBUTTONDOWN and sun.get_rect().collidepoint(pygame.mouse.get_pos()):
-            pygame.mouse.set_cursor(SYSTEM_CURSOR_HAND)
-            stars += star_level
-            screen.blit(sun_if_clicked, (25, 25))
+            pygame.mouse.set_cursor(SYSTEM_CURSOR_HAND)  # Changes Cursor if clicked
+            click()  # Click sound effect
+            stars += star_level  # Every click gives [star_level] stars
+            screen.blit(sun_if_clicked, (25, 25))  # Sun becomes larger if clicked
+
+            # Displays the text [+(star_level) stars]
             star_adder = click_font.render("+" + str(star_level) + " STARS", False, white)
-            if stars >= star_barrier*star_level:
-                star_level += 1
-                star_barrier += 40
             screen.blit(star_adder, (120, 35))
+
+            if stars >= star_barrier*star_level:
+                star_level += 1  # Star level increases by 1 exponentially, so does clicking
+                star_barrier += 25  # Star barrier regularly increases by half the regular amount
         else:
             screen.blit(sun, (25, 25))
             pygame.mouse.set_cursor(SYSTEM_CURSOR_ARROW)
     star_display = star_count_font.render("TOTAL STARS = " + str(stars), False, white)
     counter_for_stars += 1
     if counter_for_stars == 1:
-        stars += stars_per_second/30
+        stars += stars_per_second/60
         counter_for_stars = 0
     screen.blit(star_display, (340, 155))
     screen.blit(level, (340, 205))
     screen.blit(producing, (100, 365))
 
-    # Price Button Side
+    # Price Button Side Variables
     Purchase_border = pygame.Rect(925, 0, 25, 810)
     Inner_border = pygame.Rect(930, 0, 15, 810)
     Middle_border = pygame.Rect(935, 0, 5, 810)
-    pygame.draw.rect(screen, (255, 255, 255), Purchase_border)
+    pygame.draw.rect(screen, white, Purchase_border)
     pygame.draw.rect(screen, (127, 127, 127), Inner_border)
     pygame.draw.rect(screen, (0, 0, 0), Middle_border)
     purchase1 = pygame.Rect(950, 0, 200, 90)
@@ -138,7 +163,7 @@ while True:
     mouse = pygame.mouse.get_pos()
 
     # Info Variables
-    brown_info = info_font.render("A weak brown dwarf, produces 0.25 stars per second. (" + str(amount_list[0]) + "). Costs " + str(round(cost_list[0])) + " stars.", False, green)
+    brown_info = info_font.render("A weak brown dwarf, produces 0.1 stars per second. (" + str(amount_list[0]) + "). Costs " + str(round(cost_list[0])) + " stars.", False, green)
     red_info = info_font.render("A somewhat stronger red dwarf, produces 1 star per second. (" + str(amount_list[1]) + ") Costs " + str(round(cost_list[1])) + " stars.", False, green)
     neutron_info = info_font.render("A more powerful neutron star, producing 8 stars per second. (" + str(amount_list[2]) + ") Costs " + str(round(cost_list[2])) + " stars.", False, green)
     regular_info = info_font.render("A regular star, produces 47 stars per second. (" + str(amount_list[3]) + ") Costs " + str(round(cost_list[3])) + " stars.", False, green)
@@ -151,33 +176,38 @@ while True:
 
     # Info and Display
     for i in range(len(star_producers)):
-        pygame.draw.rect(screen, (0, 0, 0), purchase_rect_list[i])
+        pygame.draw.rect(screen, (0, 0, 0), purchase_rect_list[i])  # Draws infra-rectangles to register hovering
     for i in range(len(star_producers)):
-        screen.blit(star_producers[i], (950, i*90))
+        screen.blit(star_producers[i], (950, i*90))  # Displays the images for purchases
         if purchase_rect_list[i].collidepoint(mouse):
-            screen.blit(description_list[i], (15, 780))
-            pygame.draw.rect(screen, yellow, (950, i*90, 200, 90), 6, border_radius=5)
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars >= cost_list[i]:
-            purchase_success = purchase_font.render('SUCCESS', True, green)
-            screen.blit(purchase_success, (970, 90*i+5))
+            screen.blit(description_list[i], (15, 780))  # Displays the corresponding description if mouse hovering
+            pygame.draw.rect(screen, yellow, (950, i*90, 200, 90), 6, border_radius=5)  # Adds yellow border around picture
+
+        # If mouse hovering and clicks and enough stars
+        if purchase_rect_list[i].collidepoint(mouse) and event.type == MOUSEBUTTONDOWN and stars >= cost_list[i]:
+            purchase_success = purchase_font.render('SUCCESS', True, green)  # Purchase Success
+            screen.blit(purchase_success, (970, 90*i+5))  # Displays success text
             stars -= round(cost_list[i])
             stars_per_second += stars_made_per_unit[i]
             cost_list[i] *= 1.15
             amount_list[i] += 1
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars < cost_list[i]:
+        if purchase_rect_list[i].collidepoint(mouse) and event.type == MOUSEBUTTONDOWN and stars < cost_list[i]:
             bad_font = pygame.font.SysFont("Impact", 35)
-            purchase_fail = bad_font.render('NOT ENOUGH', True, (255, 255, 255))
+            purchase_fail = bad_font.render('NOT ENOUGH', True, white)
             screen.blit(purchase_fail, (960, 90*i+5))
+    if amount_list[0] == 3:
+        stars_per_second = 0.3
 
     # Rounding Decimals
     if stars_per_second >= 1:
-        round(stars_per_second)
-    elif 0 < stars_per_second < 1:
-        round(stars_per_second, 3)
+        stars_per_second = round(stars_per_second, 2)
+    elif stars_per_second < 1:
+        stars_per_second = round(stars_per_second, 3)
 
     # Adding stars to total
     stars = round(stars, 3)
     star_adder = click_font.render("+" + str(star_level) + " STARS", False, white)
+    
     pygame.display.update()
 
     # Refresh Screen after update
@@ -192,25 +222,6 @@ while True:
     screen.blit(star_display, (340, 155))
     screen.blit(level, (340, 205))
     screen.blit(producing, (100, 365))
-    pygame.draw.rect(screen, (255, 255, 255), Purchase_border)
+    pygame.draw.rect(screen, white, Purchase_border)
     pygame.draw.rect(screen, (127, 127, 127), Inner_border)
     pygame.draw.rect(screen, (0, 0, 0), Middle_border)
-    for i in range(len(star_producers)):
-        pygame.draw.rect(screen, (0, 0, 0), purchase_rect_list[i])
-    for i in range(len(star_producers)):
-        screen.blit(star_producers[i], (950, i*90))
-        if purchase_rect_list[i].collidepoint(mouse):
-            screen.blit(description_list[i], (15, 780))
-            pygame.draw.rect(screen, yellow, (950, i*90, 200, 90), 6, border_radius=5)
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars >= cost_list[i]:
-            purchase_success = purchase_font.render('SUCCESS', True, green)
-            screen.blit(purchase_success, (970, 90*i+5))
-            stars -= round(cost_list[i])
-            stars_per_second += stars_made_per_unit[i]
-            cost_list[i] *= 1.25
-            amount_list[i] += 1
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars < cost_list[i]:
-            bad_font = pygame.font.SysFont("Impact", 35)
-            purchase_fail = bad_font.render('NOT ENOUGH', True, (255, 255, 255))
-            screen.blit(purchase_fail, (960, 90*i+5))
-
