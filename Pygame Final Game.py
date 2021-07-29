@@ -5,7 +5,7 @@ from pygame import mixer
 
 # Inputs and Beginning of Game
 input("\033[1;32mSet Sound Volume to 50 for best sound effects. Press any key to continue: ")
-input("\033[1;32mWelcome to \033[1;33mStar Clicker\033[1;32m\nIn this game, your goal is to make as many stars as possible. Click a unit image for about a tenth of a second to buy it.\nYou can make endless stars! Hover over a unit for info.\nClick the giant sun to make 1 star. Hold the left button down on a unit picture if you want to buy multiple.\nas you click more, your levels will incrase, with each one doubling the amount of stars you make per click.\nYou also will have units, but them at the right side of th screen. \nUnits make a certain amount of stars each second.\nThe cost of buying more star units will go up every time you buy one. \nHave fun! ")
+input("\033[1;32mWelcome to \033[1;33mStar Clicker \033[1;32mIn this game, your goal is to make as many stars as possible. Click a unit image for about a tenth of a second to buy it.\nYou can make endless stars! Hover over a unit for info.\nClick the giant sun to make 1 star. Hold the left button down on a unit picture if you want to buy multiple.\nas you click more, your levels will incrase, with each one doubling the amount of stars you make per click.\nYou also will have units, but them at the right side of th screen. \nUnits make a certain amount of stars each second.\nThe cost of buying more star units will go up every time you buy one. \nHave fun! ")
 music_select = eval(input("Music type (1), (2), (3): "))
 
 # Initializations
@@ -17,12 +17,14 @@ FPS_clock = pygame.time.Clock()
 green = (0, 255, 0)
 white = (255, 255, 255)
 yellow = (255, 255, 0)
+light_gray = (127, 127, 127)
 black = (0, 0, 0)
-ice_blue = (185, 242, 255)
+red = (255, 0, 0)
 width = 1150
 height = 810
 pygame.display.set_caption(title)
 screen = pygame.display.set_mode((width, height))
+pygame.display.flip()
 
 # Images Load
 star_background = pygame.image.load('Star.jpg').convert()
@@ -64,13 +66,28 @@ star_count_font = pygame.font.SysFont("Calibri", 35, bold=True)
 purchase_font = pygame.font.SysFont("Impact", 40)
 display_font = pygame.font.SysFont("Impact", 40)
 info_font = pygame.font.SysFont("Calibri", 24, bold=True)
-intro_font = pygame.font.SysFont("Calibri", 35, bold=True)
+purchase1 = pygame.Rect(950, 0, 200, 90)
+purchase2 = pygame.Rect(950, 90, 200, 90)
+purchase3 = pygame.Rect(950, 180, 200, 90)
+purchase4 = pygame.Rect(950, 270, 200, 90)
+purchase5 = pygame.Rect(950, 360, 200, 90)
+purchase6 = pygame.Rect(950, 450, 200, 90)
+purchase7 = pygame.Rect(950, 540, 200, 90)
+purchase8 = pygame.Rect(950, 630, 200, 90)
+purchase9 = pygame.Rect(950, 720, 200, 90)
+Purchase_border = pygame.Rect(925, 0, 25, 810)
+Inner_border = pygame.Rect(930, 0, 15, 810)
+Middle_border = pygame.Rect(935, 0, 5, 810)
+purchase_rect_list = [purchase1, purchase2, purchase3, purchase4, purchase5, purchase6, purchase7, purchase8, purchase9]
 amount_list = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 star_producers = [brown, red, neutron, regular, giant, supergiant, nebula, foam, bang]
 stars_made_per_unit = [0.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000]
 cost_list = [15, 100, 1500, 8000, 20000, 150000, 1000000, 2500000, 10000000]
 mouse_click_counter = 0  # Sets a mouse click counter for successful purchase
 mouse_click_counter_2 = 0  # Sets a mouse click counter for failed purchase
+success_counter = 0  # Sets a counter for successful purchase rectangle
+star_counter = 0  # Sets a counter for stars
+fail_counter = 0  # Sets a counter for failed purchases
 
 
 # Background Music Function
@@ -79,19 +96,19 @@ def music():
     # Music Select 1
     if music_select == 1:
         pygame.mixer.music.load('Battle Cats BGM - Main Theme.mp3')
-        pygame.mixer.music.set_volume(0.15)
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)
 
     # Music Select 2
     elif music_select == 2:
         pygame.mixer.music.load('Battle Cats BGM - Uphill Battle.mp3')
-        pygame.mixer.music.set_volume(0.15)
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)
 
     # Music Select 3
     elif music_select == 3:
         pygame.mixer.music.load('Battle Cats BGM - Boss Battle Theme.mp3')
-        pygame.mixer.music.set_volume(0.15)
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)
 
 
@@ -108,6 +125,7 @@ def purchase_good():
     success.play()
     success.set_volume(1.25)
 
+
 # Purchase Fail Sound Effect
 def purchase_fail():
     fail = pygame.mixer.Sound('Purchase Fail.wav')
@@ -120,13 +138,13 @@ music()
 
 # Screen and Gameplay
 while True:
-    FPS_clock.tick(60)  # 60 frames per second
+    FPS_clock.tick(45)  # 45 frames per second
     for event in pygame.event.get():
 
         # If exit pygame, end program.
         if event.type == QUIT:
             print()
-            print("Game has ended, thank you for playing")
+            print("GAME HAS ENDED, THANK YOU FOR PLAYING.")
             exit()
 
         # Defining Star Fonts
@@ -158,34 +176,11 @@ while True:
     screen.blit(level, (330, 205))  # Displays star level
     screen.blit(producing, (90, 355))  # Displays stars per second
 
-    # Adds Stars to Total
-    # ==================================
-    star_counter = 0
-    star_counter += 1
-    if star_counter == 1:
-        stars += stars_per_second/60
-    stars = round(stars, 3)
-    # ==================================
-
-    # Price Button Side Variables
+    # Side-Line Display
     # ========================================================================================================================
-    Purchase_border = pygame.Rect(925, 0, 25, 810)
-    Inner_border = pygame.Rect(930, 0, 15, 810)
-    Middle_border = pygame.Rect(935, 0, 5, 810)
     pygame.draw.rect(screen, white, Purchase_border)
-    pygame.draw.rect(screen, (127, 127, 127), Inner_border)
+    pygame.draw.rect(screen, light_gray, Inner_border)
     pygame.draw.rect(screen, black, Middle_border)
-    purchase1 = pygame.Rect(950, 0, 200, 90)
-    purchase2 = pygame.Rect(950, 90, 200, 90)
-    purchase3 = pygame.Rect(950, 180, 200, 90)
-    purchase4 = pygame.Rect(950, 270, 200, 90)
-    purchase5 = pygame.Rect(950, 360, 200, 90)
-    purchase6 = pygame.Rect(950, 450, 200, 90)
-    purchase7 = pygame.Rect(950, 540, 200, 90)
-    purchase8 = pygame.Rect(950, 630, 200, 90)
-    purchase9 = pygame.Rect(950, 720, 200, 90)
-    purchase_rect_list = [purchase1, purchase2, purchase3, purchase4, purchase5, purchase6, purchase7, purchase8, purchase9]
-    mouse = pygame.mouse.get_pos()
     # ========================================================================================================================
 
     # Info Variables
@@ -202,37 +197,40 @@ while True:
     description_list = [brown_info, red_info, neutron_info, regular_info, giant_info, supergiant_info, nebula_info,foam_info, bang_info]
     # ============================================================================================================================================================================================
 
+    success_counter += 1  # Adds 1 to counter ever frame
+    fail_counter += 1  # Adds 1 to counter ever frame
+
     # Info and Display
     for i in range(len(star_producers)):
-        pygame.draw.rect(screen, black, purchase_rect_list[i])  # Draws infra-rectangles to register hovering
+        pygame.draw.rect(screen, black, purchase_rect_list[i])  # Draws infra-rectangles to register hovering without images
     for i in range(len(star_producers)):
         screen.blit(star_producers[i], (950, i*90))  # Displays the images for purchases
-        if purchase_rect_list[i].collidepoint(mouse):
+        if purchase_rect_list[i].collidepoint(pygame.mouse.get_pos()):
             screen.blit(description_list[i], (15, 780))  # Displays the corresponding description if mouse hovering
             pygame.draw.rect(screen, yellow, (950, i*90, 200, 90), 6, border_radius=5)  # Adds yellow border around picture
 
         # If mouse hovering and clicks and enough stars
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars >= cost_list[i]:
+        if purchase_rect_list[i].collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0] and stars >= cost_list[i]:
             mouse_click_counter += 1  # Counter increases by 1 ever frame the above if statement is good
-            purchase_success = pygame.Rect(955, (5+90)*i, 195, 85)  # Purchase Success
             if mouse_click_counter >= 7:
                 purchase_good()  # Successful purchase sound
                 stars -= round(cost_list[i])  # Subtract the cost from total stars
                 stars_per_second += stars_made_per_unit[i]  # Add more to stars per second
                 cost_list[i] *= 1.15  # The cost goes up by 15%
                 amount_list[i] += 1  # The amount of that unit goes up by 1
-                pygame.draw.rect(screen, green, purchase_success)  # Displays success Box
+                screen.fill(green)
                 mouse_click_counter = 0  # Resets the counter
 
         # If attempt to buy but not enough stars
-        if purchase_rect_list[i].collidepoint(mouse) and pygame.mouse.get_pressed()[0] and stars < cost_list[i]:
+        if purchase_rect_list[i].collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0] and stars < cost_list[i]:
             mouse_click_counter_2 += 1  # Counter increases by 1 ever frame the above if statement is good
             if mouse_click_counter_2 == 10:
                 purchase_fail()
-                mouse_click_counter = 0  # Resets counter
+                screen.fill(255, 255, 255)
+                mouse_click_counter_2 = 0  # Resets counter
 
     if amount_list[0] == 3:
-        stars_per_second = 0.3  # Quick Edit to change from 0.399999 to 0.3
+        stars_per_second = 0.3  # Quick Edit to change from 0.299999 to 0.3
 
     # Rounding Decimals
     if stars_per_second >= 1:
@@ -241,6 +239,15 @@ while True:
         stars_per_second = round(stars_per_second, 3)  # Rounds to 3 decimals if larger than 1
 
     pygame.display.update()  # Updates Screen
+
+    # Adds Stars to Total
+    # ==================================
+    star_counter += 1
+    if star_counter == 1:
+        stars += stars_per_second/45
+        star_counter = 0
+    stars = round(stars, 3)
+    # ==================================
 
     # Refresh Screen After Update
     # ===========================================
